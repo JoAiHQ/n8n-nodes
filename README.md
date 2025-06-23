@@ -131,6 +131,10 @@ Here's a simple workflow that responds to user messages:
 
 ## Version history
 
+### 0.1.1
+- Updated documentation to accurately reflect current functionality
+- Corrected README descriptions and examples
+
 ### 0.1.0
 - Initial release
 - Send messages as JoAI agents with support for:
