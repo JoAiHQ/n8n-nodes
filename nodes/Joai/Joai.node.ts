@@ -8,15 +8,15 @@ import {
 
 export class Joai implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'JoAi',
+		displayName: 'JoAI',
 		name: 'joai',
 		icon: 'file:joai.svg',
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Send messages as a JoAi agent',
+		description: 'Send messages as a JoAI agent',
 		defaults: {
-			name: 'Joai',
+			name: 'JoAI',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
