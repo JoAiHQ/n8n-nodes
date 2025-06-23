@@ -12,14 +12,14 @@
     "chatbot"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/yourusername/n8n-nodes-joai",
+  "homepage": "https://github.com/michavie/n8n-nodes-joai",
   "author": {
-    "name": "Your Name",
-    "email": "your.email@example.com"
+    "name": "michavie",
+    "email": "micha@vleap.ai"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/n8n-nodes-joai.git"
+    "url": "https://github.com/michavie/n8n-nodes-joai.git"
   },
   "main": "index.js",
   "scripts": {
