@@ -123,7 +123,7 @@ Here's a simple workflow that responds to user messages:
 
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [JoAI API Documentation](https://docs.joai.com)
-- [GitHub Repository](https://github.com/JoAiHQ/n8n-nodes-joai)
+- [GitHub Repository](https://github.com/JoAiHQ/n8n-nodes)
 
 ## Version history
 
@@ -138,7 +138,7 @@ Here's a simple workflow that responds to user messages:
 
 If you encounter any issues or have questions:
 
-1. Check the [GitHub Issues](https://github.com/JoAiHQ/n8n-nodes-joai/issues)
+1. Check the [GitHub Issues](https://github.com/JoAiHQ/n8n-nodes/issues)
 2. Create a new issue if your problem isn't already reported
 3. Provide as much detail as possible including n8n version, node version, and error messages
 
