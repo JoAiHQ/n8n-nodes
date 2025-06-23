@@ -11,14 +11,14 @@ import {
 
 export class JoaiTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'JoAI Trigger',
+		displayName: 'JoAi Trigger',
 		name: 'joaiTrigger',
 		icon: 'file:joai.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Trigger workflows based on JoAI events via webhooks',
+		description: 'Trigger workflows based on JoAi events via webhooks',
 		defaults: {
-			name: 'JoAI Trigger',
+			name: 'JoAi Trigger',
 		},
 		inputs: [],
 		outputs: [NodeConnectionType.Main],
@@ -68,7 +68,7 @@ export class JoaiTrigger implements INodeType {
 					},
 				],
 				default: ['agent.action'],
-				description: 'Select which JoAI events should trigger this workflow',
+				description: 'Select which JoAi events should trigger this workflow',
 			},
 			{
 				displayName: 'Webhook Name',
@@ -114,7 +114,7 @@ export class JoaiTrigger implements INodeType {
 		],
 	};
 
-	// Register webhook with JoAI server when workflow is activated
+	// Register webhook with JoAi server when workflow is activated
 	async webhookStart(this: IHookFunctions): Promise<boolean> {
 		const webhookUrl = this.getNodeWebhookUrl('default');
 		const agentId = this.getNodeParameter('agentId') as string;
@@ -122,7 +122,7 @@ export class JoaiTrigger implements INodeType {
 		const webhookName = this.getNodeParameter('webhookName') as string;
 
 		try {
-			// Register webhook with JoAI server using the correct API
+			// Register webhook with JoAi server using the correct API
 			const options = {
 				method: 'POST',
 				uri: `/agents/${agentId}/webhooks`,
@@ -133,7 +133,7 @@ export class JoaiTrigger implements INodeType {
 					headers: {
 						'Content-Type': 'application/json',
 					},
-					description: 'n8n workflow webhook for JoAI events',
+					description: 'n8n workflow webhook for JoAi events',
 					active: true,
 					verifySsl: true,
 					timeout: 30,
@@ -150,16 +150,16 @@ export class JoaiTrigger implements INodeType {
 				workflowData.webhookId = response.data.id;
 				workflowData.agentId = agentId;
 
-				console.log(`✅ JoAI webhook registered: ${response.data.id} for agent ${agentId}`);
+				console.log(`✅ JoAi webhook registered: ${response.data.id} for agent ${agentId}`);
 				console.log(`📋 Monitoring events: ${triggerEvents.join(', ')}`);
 				return true;
 			} else {
-				console.error('❌ No webhook ID returned from JoAI API');
+				console.error('❌ No webhook ID returned from JoAi API');
 				return false;
 			}
 
 		} catch (error) {
-			console.error('❌ Failed to register JoAI webhook:', error);
+			console.error('❌ Failed to register JoAi webhook:', error);
 			return false;
 		}
 	}
@@ -179,7 +179,7 @@ export class JoaiTrigger implements INodeType {
 				} as any;
 
 				await this.helpers.requestWithAuthentication.call(this, 'joaiApi', options);
-				console.log(`✅ JoAI webhook unregistered: ${webhookId}`);
+				console.log(`✅ JoAi webhook unregistered: ${webhookId}`);
 
 				// Clean up stored data
 				delete workflowData.webhookId;
@@ -188,18 +188,18 @@ export class JoaiTrigger implements INodeType {
 
 			return true;
 		} catch (error) {
-			console.error('❌ Failed to unregister JoAI webhook:', error);
+			console.error('❌ Failed to unregister JoAi webhook:', error);
 			return false;
 		}
 	}
 
-	// Handle incoming webhook from JoAI server
+	// Handle incoming webhook from JoAi server
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const bodyData = this.getBodyData() as IDataObject;
 		const triggerEvents = this.getNodeParameter('triggerEvents') as string[];
 		const additionalFilters = this.getNodeParameter('additionalFilters') as any;
 
-		// Verify this is a valid JoAI webhook payload
+		// Verify this is a valid JoAi webhook payload
 		if (!bodyData.event || !bodyData.webhookable || !bodyData.data) {
 			console.log('❌ Invalid webhook payload received');
 			return {

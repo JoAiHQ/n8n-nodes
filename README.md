@@ -2,7 +2,7 @@
 
 ![n8n.io - Workflow Automation](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-logo.png)
 
-This is an n8n community node that provides integration with JoAI (AI Agent Platform). It allows you to send messages as AI agents and receive real-time webhooks for agent events.
+This is an n8n community node that provides integration with JoAi (AI Agent Platform). It allows you to send messages as AI agents and receive real-time webhooks for agent events.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -29,27 +29,27 @@ After installing the node, you can use it like any other node in n8n.
 
 ## Operations
 
-### JoAI Node
-- **Send Message**: Send a message as a JoAI agent to a specific room or conversation
+### JoAi Node
+- **Send Message**: Send a message as a JoAi agent to a specific room or conversation
 
-### JoAI Trigger
-- **Webhook Events**: Receive real-time events from JoAI agents
+### JoAi Trigger
+- **Webhook Events**: Receive real-time events from JoAi agents
   - Agent Actions
   - Agent Messages
   - User Messages
 
 ## Credentials
 
-This node requires JoAI API credentials. You need:
+This node requires JoAi API credentials. You need:
 
-1. **API Key**: Your JoAI API authentication key
-2. **Base URL**: The base URL for your JoAI API instance (e.g., `https://api.joai.com`)
+1. **API Key**: Your JoAi API authentication key
+2. **Base URL**: The base URL for your JoAi API instance (e.g., `https://api.joai.com`)
 
 ### Setting up credentials
 
 1. In n8n, go to **Settings > Credentials**.
 2. Select **Create New**.
-3. Search for **JoAI API** and select it.
+3. Search for **JoAi API** and select it.
 4. Enter your **API Key** and **Base URL**.
 5. Click **Save**.
 
@@ -62,9 +62,9 @@ This node requires JoAI API credentials. You need:
 
 ### Basic Message Sending
 
-1. Add a **JoAI** node to your workflow
+1. Add a **JoAi** node to your workflow
 2. Select **Send Message** operation
-3. Choose your JoAI credentials
+3. Choose your JoAi credentials
 4. Configure the message parameters:
    - **Agent ID**: The UUID of the agent that will send the message
    - **Message**: The content to send
@@ -74,8 +74,8 @@ This node requires JoAI API credentials. You need:
 
 ### Setting up Webhooks
 
-1. Add a **JoAI Trigger** node to your workflow
-2. Configure your JoAI credentials
+1. Add a **JoAi Trigger** node to your workflow
+2. Configure your JoAi credentials
 3. Enter the Agent ID you want to monitor
 4. Select the event types you want to trigger on:
    - `agent.action` - When the agent performs an action
@@ -84,7 +84,7 @@ This node requires JoAI API credentials. You need:
 5. Optionally add filters for room, message content, or user email
 6. Activate the workflow
 
-The trigger will automatically register a webhook with your JoAI instance and start receiving real-time events.
+The trigger will automatically register a webhook with your JoAi instance and start receiving real-time events.
 
 ### Example Workflow
 
@@ -94,7 +94,7 @@ Here's a simple workflow that responds to user messages:
 {
   "nodes": [
     {
-      "name": "JoAI Trigger",
+      "name": "JoAi Trigger",
       "type": "@joai/n8n-nodes-joai.joaiTrigger",
       "parameters": {
         "agentId": "123e4567-e89b-12d3-a456-426614174000",
@@ -126,7 +126,7 @@ Here's a simple workflow that responds to user messages:
 ## Resources
 
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-- [JoAI API Documentation](https://docs.joai.com)
+- [JoAi API Documentation](https://docs.joai.com)
 - [GitHub Repository](https://github.com/JoAiHQ/n8n-nodes)
 
 ## Version history
@@ -137,7 +137,7 @@ Here's a simple workflow that responds to user messages:
 
 ### 0.1.0
 - Initial release
-- Send messages as JoAI agents with support for:
+- Send messages as JoAi agents with support for:
   - Agent ID specification
   - Room/conversation targeting
   - Message types (text, system, error)

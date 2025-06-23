@@ -1,7 +1,7 @@
 {
   "name": "@joai/n8n-nodes-joai",
   "version": "0.1.1",
-  "description": "n8n community node for JoAI - Send messages as AI agents and receive real-time event webhooks",
+  "description": "n8n community node for JoAi - Send messages as AI agents and receive real-time event webhooks",
   "keywords": [
     "n8n-community-node-package",
     "joai",
@@ -30,7 +30,7 @@
     "lintfix": "eslint nodes/**/*.ts credentials/**/*.ts --fix",
     "prepublishOnly": "npm run build && npm run lint -s",
     "start:n8n": "npm run build && npm pack && npm install -g n8n-nodes-joai-0.1.0.tgz && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/n8n-nodes-joai\" && npx n8n",
-    "dev:n8n": "npm run build && npm pack && npm install -g n8n-nodes-joai-0.1.0.tgz && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/n8n-nodes-joai\" && echo \"🚀 Starting n8n with JoAI nodes...\" && npx n8n"
+    "dev:n8n": "npm run build && npm pack && npm install -g n8n-nodes-joai-0.1.0.tgz && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/n8n-nodes-joai\" && echo \"🚀 Starting n8n with JoAi nodes...\" && npx n8n"
   },
   "files": [
     "dist"
