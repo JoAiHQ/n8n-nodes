@@ -2,7 +2,7 @@
 
 ![n8n.io - Workflow Automation](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-logo.png)
 
-This is an n8n community node that provides integration with JoAI (AI Agent Platform). It allows you to automate AI agent interactions and receive real-time webhooks for agent events.
+This is an n8n community node that provides integration with JoAI (AI Agent Platform). It allows you to send messages as AI agents and receive real-time webhooks for agent events.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -30,9 +30,7 @@ After installing the node, you can use it like any other node in n8n.
 ## Operations
 
 ### JoAI Node
-- **Send Message**: Send a message to a JoAI agent
-- **Get Agent Info**: Retrieve information about a specific agent
-- **List Agents**: Get a list of all available agents
+- **Send Message**: Send a message as a JoAI agent to a specific room or conversation
 
 ### JoAI Trigger
 - **Webhook Events**: Receive real-time events from JoAI agents
@@ -67,7 +65,11 @@ This node requires JoAI API credentials. You need:
 1. Add a **JoAI** node to your workflow
 2. Select **Send Message** operation
 3. Choose your JoAI credentials
-4. Enter the Agent ID and your message
+4. Configure the message parameters:
+   - **Agent ID**: The UUID of the agent that will send the message
+   - **Message**: The content to send
+   - **Room** (optional): Room or conversation ID to send to
+   - **Additional Fields** (optional): Message type and metadata
 5. Execute the workflow
 
 ### Setting up Webhooks
@@ -95,15 +97,16 @@ Here's a simple workflow that responds to user messages:
       "name": "JoAI Trigger",
       "type": "@joai/n8n-nodes.joaiTrigger",
       "parameters": {
-        "agentId": "your-agent-uuid",
-        "triggerEvents": ["user.message"]
+        "agentId": "123e4567-e89b-12d3-a456-426614174000",
+        "triggerEvents": ["user.message"],
+        "webhookName": "Auto-Response Webhook"
       }
     },
     {
       "name": "Process Message",
-      "type": "n8n-nodes-base.function",
+      "type": "n8n-nodes-base.code",
       "parameters": {
-        "functionCode": "return [{ json: { response: `Hello! You said: ${$json.content}` } }];"
+        "jsCode": "// Extract message content from webhook payload\nconst userMessage = $input.item.json.data.content || '';\nconst room = $input.item.json.data.room || '';\n\nreturn {\n  json: {\n    response: `Hello! You said: \"${userMessage}\"`,\n    originalRoom: room\n  }\n};"
       }
     },
     {
@@ -111,8 +114,9 @@ Here's a simple workflow that responds to user messages:
       "type": "@joai/n8n-nodes.joai",
       "parameters": {
         "operation": "sendMessage",
-        "agentId": "your-agent-uuid",
-        "message": "={{$json.response}}"
+        "agentId": "123e4567-e89b-12d3-a456-426614174000",
+        "message": "={{ $json.response }}",
+        "room": "={{ $json.originalRoom }}"
       }
     }
   ]
@@ -129,10 +133,19 @@ Here's a simple workflow that responds to user messages:
 
 ### 0.1.0
 - Initial release
-- Basic JoAI integration with message sending
-- Webhook trigger support for real-time events
-- Support for agent actions, agent messages, and user messages
-- Filtering capabilities for room, message content, and user email
+- Send messages as JoAI agents with support for:
+  - Agent ID specification
+  - Room/conversation targeting
+  - Message types (text, system, error)
+  - Custom metadata
+- Webhook trigger support for real-time events:
+  - Agent actions
+  - Agent messages
+  - User messages
+- Advanced filtering capabilities:
+  - Room-specific filtering
+  - Message content filtering
+  - User email filtering
 
 ## Support
 
