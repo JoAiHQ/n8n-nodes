@@ -1,0 +1,25 @@
+{
+  "event": "agent.executed",
+  "webhookable": {
+    "type": "agent",
+    "uuid": "agent-uuid-here",
+    "name": "My AI Agent",
+    "description": "Agent description"
+  },
+  "webhook": {
+    "id": "webhook_hashid",
+    "name": "N8N Webhook"
+  },
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "data": {
+    "executionId": 12345,
+    "message": "Hello, how can I help you?",
+    "sender": "user_123",
+    "room": "a-agent-uuid-here",
+    "user": {
+      "id": 123,
+      "name": "John Doe",
+      "email": "john@example.com"
+    }
+  }
+}

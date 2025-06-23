@@ -1,0 +1,60 @@
+{
+  "name": "n8n-nodes-joai",
+  "version": "0.1.0",
+  "description": "n8n community node for JoAI - AI agent automation and webhook integration",
+  "keywords": [
+    "n8n-community-node-package",
+    "joai",
+    "ai",
+    "agent",
+    "automation",
+    "webhook",
+    "chatbot"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/n8n-nodes-joai",
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/n8n-nodes-joai.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes/**/*.ts credentials/**/*.ts",
+    "lintfix": "eslint nodes/**/*.ts credentials/**/*.ts --fix",
+    "prepublishOnly": "npm run build && npm run lint -s",
+    "start:n8n": "npm run build && npm pack && npm install -g n8n-nodes-joai-0.1.0.tgz && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/n8n-nodes-joai\" && npx n8n",
+    "dev:n8n": "npm run build && npm pack && npm install -g n8n-nodes-joai-0.1.0.tgz && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/n8n-nodes-joai\" && echo \"🚀 Starting n8n with JoAI nodes...\" && npx n8n"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/JoaiApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Joai/Joai.node.js",
+      "dist/nodes/Joai/JoaiTrigger.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint-plugin-n8n-nodes-base": "^1.11.0",
+    "gulp": "^4.0.2",
+    "n8n-workflow": "*",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
