@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-joai",
+  "name": "@joai/n8n-nodes",
   "version": "0.1.0",
   "description": "n8n community node for JoAI - AI agent automation and webhook integration",
   "keywords": [

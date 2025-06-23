@@ -1,4 +1,4 @@
-# n8n-nodes-joai
+# @joai/n8n-nodes
 
 ![n8n.io - Workflow Automation](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-logo.png)
 
@@ -21,7 +21,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 1. Go to **Settings > Community Nodes**.
 2. Select **Install**.
-3. Enter `n8n-nodes-joai` in **Enter npm package name**.
+3. Enter `@joai/n8n-nodes` in **Enter npm package name**.
 4. Agree to the [risks](https://docs.n8n.io/integrations/community-nodes/risks/) of using community nodes: select **I understand the risks of installing unverified code from a public source**.
 5. Select **Install**.
 
@@ -93,7 +93,7 @@ Here's a simple workflow that responds to user messages:
   "nodes": [
     {
       "name": "JoAI Trigger",
-      "type": "n8n-nodes-joai.joaiTrigger",
+      "type": "@joai/n8n-nodes.joaiTrigger",
       "parameters": {
         "agentId": "your-agent-uuid",
         "triggerEvents": ["user.message"]
@@ -108,7 +108,7 @@ Here's a simple workflow that responds to user messages:
     },
     {
       "name": "Send Response",
-      "type": "n8n-nodes-joai.joai",
+      "type": "@joai/n8n-nodes.joai",
       "parameters": {
         "operation": "sendMessage",
         "agentId": "your-agent-uuid",
