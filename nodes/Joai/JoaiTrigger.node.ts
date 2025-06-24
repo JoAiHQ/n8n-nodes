@@ -83,7 +83,7 @@ export class JoaiTrigger implements INodeType {
 				typeOptions: {
 					theme: 'success',
 				},
-				description: '**This trigger automatically manages webhooks!**\n\n✅ **Activate** this workflow to create webhooks in JoAi\n\n✅ **Deactivate** to automatically remove webhooks\n\n✅ **No manual configuration needed** - just provide your Agent ID and select trigger type',
+				description: '**This trigger automatically manages webhooks!**\n\n✅ **Activate** this workflow to create webhooks in JoAi\n\n✅ **Deactivate** to automatically remove webhooks\n\n✅ **Environment changes** automatically handled - old webhooks cleaned up when URLs change\n\n✅ **No manual configuration needed** - just provide your Agent ID and select trigger type',
 			},
 		],
 	};
@@ -96,24 +96,62 @@ export class JoaiTrigger implements INodeType {
 			try {
 				const agentId = getAgentId.call(this);
 				const webhookUrl = this.getNodeWebhookUrl('default');
+				const workflowId = this.getWorkflow().id;
+				const nodeId = this.getNode().id;
+				const triggerType = this.getNodeParameter('triggerType') as string;
 
 				this.logger?.info('🔍 Checking if webhook exists', {
 					agentId,
-					webhookUrl
+					webhookUrl,
+					workflowId,
+					nodeId
 				});
 
 				const response = await apiRequest.call(this, 'GET', `/agents/${agentId}/webhooks`);
 				const existingWebhooks = response.data || [];
 
-				const exists = existingWebhooks.some((webhook: any) => webhook.url === webhookUrl);
+				const exactMatch = existingWebhooks.find((webhook: any) => webhook.url === webhookUrl);
 
-				this.logger?.info('✅ Webhook check result', {
-					exists,
+				if (exactMatch) {
+					this.logger?.info('✅ Exact webhook URL match found', {
+						webhookId: exactMatch.id,
+						webhookUrl: exactMatch.url
+					});
+					return true;
+				}
+
+				const n8nWebhooks = existingWebhooks.filter((webhook: any) =>
+					webhook.name === 'N8N Webhook' &&
+					webhook.trigger === triggerType &&
+					webhook.headers &&
+					webhook.headers['X-JoAi-Secret-Token'] === `joai_${workflowId}_${nodeId}`
+				);
+
+				if (n8nWebhooks.length > 0) {
+					this.logger?.info('🔄 Found outdated n8n webhooks with different URLs', {
+						count: n8nWebhooks.length,
+						currentUrl: webhookUrl,
+						outdatedUrls: n8nWebhooks.map((w: any) => w.url)
+					});
+
+					for (const webhook of n8nWebhooks) {
+						this.logger?.info('🗑️ Removing outdated webhook', {
+							webhookId: webhook.id,
+							oldUrl: webhook.url
+						});
+						await apiRequest.call(this, 'DELETE', `/agents/${agentId}/webhooks/${webhook.id}`);
+					}
+
+					this.logger?.info('✅ Outdated webhooks cleaned up, will create new one');
+					return false;
+				}
+
+				this.logger?.info('✅ No matching webhook found', {
 					existingCount: existingWebhooks.length,
 					targetUrl: webhookUrl
 				});
 
-				return exists;
+				return false;
 			} catch (error: any) {
 				this.logger?.error('❌ Webhook check failed', {
 					error: error.message,
@@ -173,20 +211,36 @@ export class JoaiTrigger implements INodeType {
 			try {
 				const agentId = getAgentId.call(this);
 				const webhookUrl = this.getNodeWebhookUrl('default');
+				const workflowId = this.getWorkflow().id;
+				const nodeId = this.getNode().id;
+				const triggerType = this.getNodeParameter('triggerType') as string;
 
-				this.logger?.info('🔍 Deleting webhook', {
+				this.logger?.info('🔍 Deleting webhooks', {
 					agentId,
-					webhookUrl
+					webhookUrl,
+					workflowId,
+					nodeId
 				});
-
 
 				const response = await apiRequest.call(this, 'GET', `/agents/${agentId}/webhooks`);
 				const existingWebhooks = response.data || [];
 
-
 				let deletedCount = 0;
+
 				for (const webhook of existingWebhooks) {
-					if (webhook.url === webhookUrl) {
+					const shouldDelete =
+						webhook.url === webhookUrl ||
+						(webhook.name === 'N8N Webhook' &&
+						 webhook.trigger === triggerType &&
+						 webhook.headers &&
+						 webhook.headers['X-JoAi-Secret-Token'] === `joai_${workflowId}_${nodeId}`);
+
+					if (shouldDelete) {
+						this.logger?.info('🗑️ Deleting webhook', {
+							webhookId: webhook.id,
+							webhookUrl: webhook.url,
+							reason: webhook.url === webhookUrl ? 'exact_url_match' : 'workflow_node_match'
+						});
 						await apiRequest.call(this, 'DELETE', `/agents/${agentId}/webhooks/${webhook.id}`);
 						deletedCount++;
 					}
