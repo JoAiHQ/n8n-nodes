@@ -81,7 +81,6 @@ This node requires JoAi API credentials. You need:
 The trigger will automatically:
 - ✅ Create webhooks in JoAi when you activate the workflow
 - ✅ Delete webhooks when you deactivate the workflow
-- ✅ Validate webhook security tokens
 - ✅ Pass all webhook data to the next node in your workflow
 
 No manual webhook configuration needed!
@@ -113,26 +112,6 @@ Here's a simple workflow that logs webhook data:
 - [GitHub Repository](https://github.com/JoAiHQ/n8n-nodes)
 
 ## Version history
-
-### 0.1.1
-- Updated documentation to accurately reflect current functionality
-- Corrected README descriptions and examples
-
-### 0.1.0
-- Initial release
-- Send messages as JoAi agents with support for:
-  - Agent ID specification
-  - Room/conversation targeting
-  - Message types (text, system, error)
-  - Custom metadata
-- Webhook trigger support for real-time events:
-  - Agent actions
-  - Agent messages
-  - User messages
-- Advanced filtering capabilities:
-  - Room-specific filtering
-  - Message content filtering
-  - User email filtering
 
 ## Support
 
