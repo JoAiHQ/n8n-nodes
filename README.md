@@ -15,17 +15,14 @@ This is an n8n community node that provides integration with JoAi (AI Agent Plat
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+Install using npm:
+```bash
+npm install @joai/n8n-nodes-joai
+```
 
-### Community Node Installation
-
-1. Go to **Settings > Community Nodes**.
-2. Select **Install**.
-3. Enter `@joai/n8n-nodes-joai` in **Enter npm package name**.
-4. Agree to the [risks](https://docs.n8n.io/integrations/community-nodes/risks/) of using community nodes: select **I understand the risks of installing unverified code from a public source**.
-5. Select **Install**.
-
-After installing the node, you can use it like any other node in n8n.
+Or via n8n's community nodes interface:
+1. Go to Settings > Community Nodes
+2. Install package: `@joai/n8n-nodes-joai`
 
 ## Operations
 
@@ -43,7 +40,7 @@ After installing the node, you can use it like any other node in n8n.
 This node requires JoAi API credentials. You need:
 
 1. **API Key**: Your JoAi API authentication key
-2. **Base URL**: The base URL for your JoAi API instance (e.g., `https://api.joai.com`)
+2. **Base URL**: The base URL for your JoAi API instance (e.g., `https://api.joai.ai`)
 
 ### Setting up credentials
 
@@ -72,61 +69,47 @@ This node requires JoAi API credentials. You need:
    - **Additional Fields** (optional): Message type and metadata
 5. Execute the workflow
 
-### Setting up Webhooks
+### Setting up Webhooks (Automatic)
 
 1. Add a **JoAi Trigger** node to your workflow
-2. Configure your JoAi credentials
-3. Enter the Agent ID you want to monitor
-4. Select the event types you want to trigger on:
-   - `agent.action` - When the agent performs an action
-   - `agent.message` - When the agent sends a message
-   - `user.message` - When a user sends a message
-5. Optionally add filters for room, message content, or user email
-6. Activate the workflow
+2. Configure your **JoAi API credentials** (API Key and Base URL)
+3. Enter the **Agent ID** you want to receive webhooks from
+4. Select the **event types** you want to trigger on (Agent Action, Agent Message, User Message)
+5. **Activate the workflow** - webhooks are automatically created in JoAi!
+6. **Test** by triggering an event in JoAi
 
-The trigger will automatically register a webhook with your JoAi instance and start receiving real-time events.
+The trigger will automatically:
+- ✅ Create webhooks in JoAi when you activate the workflow
+- ✅ Delete webhooks when you deactivate the workflow
+- ✅ Validate webhook security tokens
+- ✅ Pass all webhook data to the next node in your workflow
+
+No manual webhook configuration needed!
 
 ### Example Workflow
 
-Here's a simple workflow that responds to user messages:
+Here's a simple workflow that logs webhook data:
 
-```json
-{
-  "nodes": [
-    {
-      "name": "JoAi Trigger",
-      "type": "@joai/n8n-nodes-joai.joaiTrigger",
-      "parameters": {
-        "agentId": "123e4567-e89b-12d3-a456-426614174000",
-        "triggerEvents": ["user.message"],
-        "webhookName": "Auto-Response Webhook"
-      }
-    },
-    {
-      "name": "Process Message",
-      "type": "n8n-nodes-base.code",
-      "parameters": {
-        "jsCode": "// Extract message content from webhook payload\nconst userMessage = $input.item.json.data.content || '';\nconst room = $input.item.json.data.room || '';\n\nreturn {\n  json: {\n    response: `Hello! You said: \"${userMessage}\"`,\n    originalRoom: room\n  }\n};"
-      }
-    },
-    {
-      "name": "Send Response",
-      "type": "@joai/n8n-nodes-joai.joai",
-      "parameters": {
-        "operation": "sendMessage",
-        "agentId": "123e4567-e89b-12d3-a456-426614174000",
-        "message": "={{ $json.response }}",
-        "room": "={{ $json.originalRoom }}"
-      }
-    }
-  ]
-}
-```
+1. **JoAi Trigger** - Receives webhook from JoAi
+2. **Code Node** - Processes the webhook data:
+   ```javascript
+   // All webhook data is available in $input.item.json
+   const webhookData = $input.item.json;
+
+   return {
+     json: {
+       event: webhookData.event,
+       data: webhookData.data,
+       receivedAt: new Date().toISOString()
+     }
+   };
+   ```
+3. **Add other nodes** as needed for your specific use case
 
 ## Resources
 
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-- [JoAi API Documentation](https://docs.joai.com)
+- [JoAi API Documentation](https://docs.joai.ai)
 - [GitHub Repository](https://github.com/JoAiHQ/n8n-nodes)
 
 ## Version history

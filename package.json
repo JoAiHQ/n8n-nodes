@@ -29,22 +29,22 @@
     "lint": "eslint nodes/**/*.ts credentials/**/*.ts",
     "lintfix": "eslint nodes/**/*.ts credentials/**/*.ts --fix",
     "prepublishOnly": "npm run build && npm run lint -s",
-    "start:n8n": "npm run build && npm pack && npm install -g n8n-nodes-joai-0.1.0.tgz && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/n8n-nodes-joai\" && npx n8n",
-    "dev:n8n": "npm run build && npm pack && npm install -g n8n-nodes-joai-0.1.0.tgz && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/n8n-nodes-joai\" && echo \"🚀 Starting n8n with JoAi nodes...\" && npx n8n"
+    "start:n8n": "npm run build && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/@joai/n8n-nodes-joai\" && npx n8n",
+    "dev:n8n": "npm run build && export N8N_CUSTOM_EXTENSIONS=\"$(npm root -g)/@joai/n8n-nodes-joai\" && echo \"🚀 Starting n8n with JoAi nodes (linked)...\" && npx n8n"
   },
   "files": [
     "dist"
   ],
-  "n8n": {
-    "n8nNodesApiVersion": 1,
-    "credentials": [
-      "dist/credentials/JoaiApi.credentials.js"
-    ],
-    "nodes": [
-      "dist/nodes/Joai/Joai.node.js",
-      "dist/nodes/Joai/JoaiTrigger.node.js"
-    ]
-  },
+  	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/JoaiApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Joai/Joai.node.js",
+			"dist/nodes/Joai/JoaiTrigger.node.js"
+		]
+	},
   "publishConfig": {
     "access": "public"
   },

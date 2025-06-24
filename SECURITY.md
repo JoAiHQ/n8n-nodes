@@ -112,7 +112,7 @@ JOAI_AGENT_ESCALATION=agent_1a2b3c4d5e6f
 ```json
 {
   "apiKey": "your_secure_api_key",
-  "baseUrl": "https://api.joai.com",
+  "baseUrl": "https://api.joai.ai",
   "useEnvVars": true,
   "agentMapping": "{}"
 }
@@ -135,7 +135,7 @@ JOAI_AGENT_ESCALATION=agent_1a2b3c4d5e6f
 ```json
 {
   "apiKey": "your_secure_api_key",
-  "baseUrl": "https://api.joai.com",
+  "baseUrl": "https://api.joai.ai",
   "useEnvVars": true,
   "agentMapping": {
     "emergency": "agent_emergency_uuid",
@@ -155,7 +155,7 @@ JOAI_AGENT_ESCALATION=agent_1a2b3c4d5e6f
 ```json
 {
   "apiKey": "joai_live_sk_1234567890abcdef",  // Use live keys in production
-  "baseUrl": "https://api.joai.com",
+  "baseUrl": "https://api.joai.ai",
   "rateLimiting": true,
   "ipWhitelist": ["192.168.1.0/24"]
 }

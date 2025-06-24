@@ -1,4 +1,5 @@
-import {
+import crypto from 'crypto';
+import type {
     IDataObject,
     IHookFunctions,
     INodeExecutionData,
@@ -6,8 +7,10 @@ import {
     INodeTypeDescription,
     IWebhookFunctions,
     IWebhookResponseData,
-    NodeConnectionType,
 } from 'n8n-workflow';
+import { NodeConnectionType } from 'n8n-workflow';
+
+import { apiRequest, getAgentId, getSecretToken } from './GenericFunctions';
 
 export class JoaiTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -16,7 +19,7 @@ export class JoaiTrigger implements INodeType {
 		icon: 'file:joai.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Trigger workflows based on JoAi events via webhooks',
+		description: 'Receive webhooks from JoAi agents automatically',
 		defaults: {
 			name: 'JoAi Trigger',
 		},
@@ -42,14 +45,14 @@ export class JoaiTrigger implements INodeType {
 				name: 'agentId',
 				type: 'string',
 				required: true,
-				placeholder: 'e.g., 123e4567-e89b-12d3-a456-426614174000',
-				description: 'Agent ID to monitor for events',
 				default: '',
+				placeholder: 'e.g. 07f3169e-e7f0-4394-8e7b-5446e8e1fcb6',
+				description: 'Agent UUID to receive webhooks from',
 			},
 			{
-				displayName: 'Trigger Events',
-				name: 'triggerEvents',
-				type: 'multiOptions',
+				displayName: 'Trigger On',
+				name: 'triggerType',
+				type: 'options',
 				options: [
 					{
 						name: 'Agent Action',
@@ -67,214 +70,175 @@ export class JoaiTrigger implements INodeType {
 						description: 'Triggered when a user sends a message',
 					},
 				],
-				default: ['agent.action'],
-				description: 'Select which JoAi events should trigger this workflow',
+				required: true,
+				default: 'agent.message',
+				description: 'Select the type of JoAi event to receive',
 			},
+
 			{
-				displayName: 'Webhook Name',
-				name: 'webhookName',
-				type: 'string',
-				default: 'n8n Workflow Webhook',
-				placeholder: 'My n8n Webhook',
-				description: 'Descriptive name for the webhook',
-			},
-			{
-				displayName: 'Additional Filters',
-				name: 'additionalFilters',
-				type: 'collection',
-				placeholder: 'Add Filter',
-				default: {},
-				options: [
-					{
-						displayName: 'Room Filter',
-						name: 'room',
-						type: 'string',
-						default: '',
-						placeholder: 'e.g., general, support',
-						description: 'Only trigger for messages in specific room',
-					},
-					{
-						displayName: 'Message Contains',
-						name: 'messageContains',
-						type: 'string',
-						default: '',
-						placeholder: 'keyword or phrase',
-						description: 'Only trigger if message contains this text',
-					},
-					{
-						displayName: 'User Email Filter',
-						name: 'userEmail',
-						type: 'string',
-						default: '',
-						placeholder: 'user@example.com',
-						description: 'Filter by specific user email',
-					},
-				],
+				displayName: '🎉 Automatic Webhook Management',
+				name: 'info',
+				type: 'notice',
+				default: '',
+				typeOptions: {
+					theme: 'success',
+				},
+				description: '**This trigger automatically manages webhooks!**\n\n✅ **Activate** this workflow to create webhooks in JoAi\n\n✅ **Deactivate** to automatically remove webhooks\n\n✅ **No manual configuration needed** - just provide your Agent ID and select trigger type',
 			},
 		],
 	};
 
-	// Register webhook with JoAi server when workflow is activated
-	async webhookStart(this: IHookFunctions): Promise<boolean> {
-		const webhookUrl = this.getNodeWebhookUrl('default');
-		const agentId = this.getNodeParameter('agentId') as string;
-		const triggerEvents = this.getNodeParameter('triggerEvents') as string[];
-		const webhookName = this.getNodeParameter('webhookName') as string;
 
-		try {
-			// Register webhook with JoAi server using the correct API
-			const options = {
-				method: 'POST',
-				uri: `/agents/${agentId}/webhooks`,
-				body: {
-					name: webhookName,
-					url: webhookUrl,
-					triggers: triggerEvents,
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					description: 'n8n workflow webhook for JoAi events',
-					active: true,
-					verifySsl: true,
-					timeout: 30,
-					maxRetries: 3
-				},
-				json: true,
-			} as any;
 
-			const response = await this.helpers.requestWithAuthentication.call(this, 'joaiApi', options);
+	webhookMethods = {
+		default: {
+					async checkExists(this: IHookFunctions): Promise<boolean> {
+			try {
+				const agentId = getAgentId.call(this);
+				const webhookUrl = this.getNodeWebhookUrl('default');
 
-			// Store webhook info for cleanup - using workflow instance data
-			if (response.data?.id) {
-				const workflowData = this.getWorkflowStaticData('node');
-				workflowData.webhookId = response.data.id;
-				workflowData.agentId = agentId;
+				this.logger?.info('🔍 Checking if webhook exists', {
+					agentId,
+					webhookUrl
+				});
 
-				console.log(`✅ JoAi webhook registered: ${response.data.id} for agent ${agentId}`);
-				console.log(`📋 Monitoring events: ${triggerEvents.join(', ')}`);
-				return true;
-			} else {
-				console.error('❌ No webhook ID returned from JoAi API');
+				const response = await apiRequest.call(this, 'GET', `/agents/${agentId}/webhooks`);
+				const existingWebhooks = response.data || [];
+
+				const exists = existingWebhooks.some((webhook: any) => webhook.url === webhookUrl);
+
+				this.logger?.info('✅ Webhook check result', {
+					exists,
+					existingCount: existingWebhooks.length,
+					targetUrl: webhookUrl
+				});
+
+				return exists;
+			} catch (error: any) {
+				this.logger?.error('❌ Webhook check failed', {
+					error: error.message,
+					agentId: this.getNodeParameter('agentId')
+				});
 				return false;
 			}
+		},
 
-		} catch (error) {
-			console.error('❌ Failed to register JoAi webhook:', error);
-			return false;
-		}
-	}
+					async create(this: IHookFunctions): Promise<boolean> {
+			try {
+				const agentId = getAgentId.call(this);
+				const webhookUrl = this.getNodeWebhookUrl('default');
+				const triggerType = this.getNodeParameter('triggerType') as string;
+				const secretToken = getSecretToken.call(this);
 
-	// Unregister webhook when workflow is deactivated
-	async webhookDelete(this: IHookFunctions): Promise<boolean> {
-		try {
-			const workflowData = this.getWorkflowStaticData('node');
-			const webhookId = workflowData.webhookId as string;
-			const agentId = workflowData.agentId as string;
+				this.logger?.info('🔍 Creating webhook', {
+					agentId,
+					webhookUrl,
+					triggerType,
+					hasSecretToken: !!secretToken
+				});
 
-			if (webhookId && agentId) {
-				const options = {
-					method: 'DELETE',
-					uri: `/agents/${agentId}/webhooks/${webhookId}`,
-					json: true,
-				} as any;
+				const body: IDataObject = {
+					name: 'N8N Webhook',
+					url: webhookUrl,
+					trigger: triggerType,
+					active: true,
+					headers: {
+						'X-JoAi-Secret-Token': secretToken,
+					},
+					description: 'Webhook for n8n workflow automation',
+					verifySsl: true,
+					timeout: 30,
+					maxRetries: 3,
+				};
 
-				await this.helpers.requestWithAuthentication.call(this, 'joaiApi', options);
-				console.log(`✅ JoAi webhook unregistered: ${webhookId}`);
+				const response = await apiRequest.call(this, 'POST', `/agents/${agentId}/webhooks`, body);
 
-				// Clean up stored data
-				delete workflowData.webhookId;
-				delete workflowData.agentId;
+				this.logger?.info('✅ Webhook created successfully', {
+					agentId,
+					responseReceived: !!response
+				});
+
+				return true;
+			} catch (error: any) {
+				this.logger?.error('❌ Webhook creation failed', {
+					error: error.message,
+					agentId: this.getNodeParameter('agentId'),
+					triggerType: this.getNodeParameter('triggerType')
+				});
+				throw new Error(`Failed to create webhook: ${error.message}`);
 			}
+		},
 
-			return true;
-		} catch (error) {
-			console.error('❌ Failed to unregister JoAi webhook:', error);
-			return false;
-		}
-	}
+					async delete(this: IHookFunctions): Promise<boolean> {
+			try {
+				const agentId = getAgentId.call(this);
+				const webhookUrl = this.getNodeWebhookUrl('default');
 
-	// Handle incoming webhook from JoAi server
+				this.logger?.info('🔍 Deleting webhook', {
+					agentId,
+					webhookUrl
+				});
+
+
+				const response = await apiRequest.call(this, 'GET', `/agents/${agentId}/webhooks`);
+				const existingWebhooks = response.data || [];
+
+
+				let deletedCount = 0;
+				for (const webhook of existingWebhooks) {
+					if (webhook.url === webhookUrl) {
+						await apiRequest.call(this, 'DELETE', `/agents/${agentId}/webhooks/${webhook.id}`);
+						deletedCount++;
+					}
+				}
+
+				this.logger?.info('✅ Webhook deletion completed', {
+					agentId,
+					deletedCount,
+					totalWebhooks: existingWebhooks.length
+				});
+
+				return true;
+			} catch (error: any) {
+				this.logger?.warn('⚠️ Failed to delete webhook', {
+					error: error.message,
+					agentId: this.getNodeParameter('agentId')
+				});
+				return false;
+			}
+		},
+		},
+	};
+
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const bodyData = this.getBodyData() as IDataObject;
-		const triggerEvents = this.getNodeParameter('triggerEvents') as string[];
-		const additionalFilters = this.getNodeParameter('additionalFilters') as any;
+		const headerData = this.getHeaderData();
 
-		// Verify this is a valid JoAi webhook payload
-		if (!bodyData.event || !bodyData.webhookable || !bodyData.data) {
-			console.log('❌ Invalid webhook payload received');
-			return {
-				noWebhookResponse: true,
-			};
+
+		const workflowId = this.getWorkflow().id;
+		const nodeId = this.getNode().id;
+		const expectedSecret = `joai_${workflowId}_${nodeId}`;
+		const receivedSecret = headerData['x-joai-secret-token'];
+
+		if (expectedSecret && receivedSecret) {
+			const expectedBuffer = Buffer.from(expectedSecret);
+			const receivedBuffer = Buffer.from(String(receivedSecret));
+
+			if (
+				expectedBuffer.byteLength !== receivedBuffer.byteLength ||
+				!crypto.timingSafeEqual(expectedBuffer, receivedBuffer)
+			) {
+				const res = this.getResponseObject();
+				res.status(403).json({ message: 'Invalid webhook secret' });
+				return {
+					noWebhookResponse: true,
+				};
+			}
 		}
 
-		const eventType = bodyData.event as string;
-		const webhookableData = bodyData.webhookable as IDataObject;
-		const eventData = bodyData.data as IDataObject;
-
-		// Check if this event type should trigger the workflow
-		if (!triggerEvents.includes(eventType)) {
-			return {
-				noWebhookResponse: true,
-			};
-		}
-
-		// Apply additional filters
-		let shouldTrigger = true;
-
-		// Filter by room if specified
-		if (additionalFilters.room && eventData.room) {
-			shouldTrigger = shouldTrigger && eventData.room === additionalFilters.room;
-		}
-
-		// Filter by message content if specified
-		if (additionalFilters.messageContains) {
-			const messageContent = (eventData.content || eventData.message || '').toString().toLowerCase();
-			const filterText = additionalFilters.messageContains.toLowerCase();
-			shouldTrigger = shouldTrigger && messageContent.includes(filterText);
-		}
-
-		// Filter by user email if specified
-		if (additionalFilters.userEmail && eventData.user) {
-			const userData = eventData.user as IDataObject;
-			shouldTrigger = shouldTrigger && userData.email === additionalFilters.userEmail;
-		}
-
-		if (!shouldTrigger) {
-			return {
-				noWebhookResponse: true,
-			};
-		}
-
-		// Return structured webhook data to the workflow
 		const returnData: INodeExecutionData[] = [
 			{
-				json: {
-					// Main event info
-					event: eventType,
-					timestamp: bodyData.timestamp,
-
-					// Agent/webhookable info
-					agent: {
-						type: webhookableData.type,
-						uuid: webhookableData.uuid,
-						name: webhookableData.name,
-						description: webhookableData.description,
-					},
-
-					// Webhook info
-					webhook: bodyData.webhook,
-
-					// Event-specific data
-					data: eventData,
-
-					// Convenience fields for easy access
-					...(eventData.messageId && { messageId: eventData.messageId }),
-					...(eventData.content && { content: eventData.content }),
-					...(eventData.message && { message: eventData.message }),
-					...(eventData.sender && { sender: eventData.sender }),
-					...(eventData.room && { room: eventData.room }),
-					...(eventData.user && { user: eventData.user }),
-				},
+				json: bodyData,
 			},
 		];
 

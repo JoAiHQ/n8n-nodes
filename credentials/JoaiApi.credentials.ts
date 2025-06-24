@@ -24,7 +24,7 @@ export class JoaiApi implements ICredentialType {
 			displayName: 'Base URL',
 			name: 'baseUrl',
 			type: 'string',
-			default: 'https://api.joai.com',
+			default: 'https://api.joai.ai',
 			required: true,
 			description: 'The base URL for the Joai API',
 		},
