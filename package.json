@@ -1,6 +1,6 @@
 {
   "name": "@joai/n8n-nodes-joai",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "n8n community node for JoAi - Send messages as AI agents and receive real-time event webhooks",
   "keywords": [
     "n8n-community-node-package",
@@ -35,16 +35,16 @@
   "files": [
     "dist"
   ],
-  	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"credentials": [
-			"dist/credentials/JoaiApi.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/Joai/Joai.node.js",
-			"dist/nodes/Joai/JoaiTrigger.node.js"
-		]
-	},
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/JoaiApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Joai/Joai.node.js",
+      "dist/nodes/Joai/JoaiTrigger.node.js"
+    ]
+  },
   "publishConfig": {
     "access": "public"
   },
