@@ -5,6 +5,7 @@ import {
     INodeTypeDescription,
     NodeConnectionType
 } from 'n8n-workflow';
+import { apiRequest } from './GenericFunctions';
 
 export class Joai implements INodeType {
 	description: INodeTypeDescription = {
@@ -26,13 +27,6 @@ export class Joai implements INodeType {
 				required: true,
 			},
 		],
-		requestDefaults: {
-			baseURL: '={{$credentials.baseUrl}}',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json',
-			},
-		},
 		properties: [
 			{
 				displayName: 'Operation',
@@ -190,26 +184,21 @@ export class Joai implements INodeType {
 	}
 }
 
-
-
 async function handleAgentSendMessage(this: IExecuteFunctions, itemIndex: number) {
 	const agentId = this.getNodeParameter('agentId', itemIndex) as string;
 	const message = this.getNodeParameter('message', itemIndex) as string;
 	const room = this.getNodeParameter('room', itemIndex, '') as string;
 	const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as any;
 
-	// Prepare the request body
 	const body: any = {
 		message: message,
 		type: additionalFields.messageType || 'text',
 	};
 
-	// Add room if provided
 	if (room) {
 		body.room = room;
 	}
 
-	// Add metadata if provided
 	if (additionalFields.metadata?.property?.length > 0) {
 		body.metadata = {};
 		additionalFields.metadata.property.forEach((prop: any) => {
@@ -219,13 +208,6 @@ async function handleAgentSendMessage(this: IExecuteFunctions, itemIndex: number
 		});
 	}
 
-	const options = {
-		method: 'POST' as const,
-		uri: `/api/v1/agents/${agentId}/message`,
-		body,
-		json: true,
-	};
-
-	const response = await this.helpers.requestWithAuthentication.call(this, 'joaiApi', options);
+	const response = await apiRequest.call(this, 'POST', `/agents/${agentId}/execute`, body);
 	return response.data || response;
 }
