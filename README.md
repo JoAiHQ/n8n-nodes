@@ -27,7 +27,7 @@ Or via n8n's community nodes interface:
 ## Operations
 
 ### JoAi Node
-- **Send Message**: Send a message as a JoAi agent to a specific room or conversation
+- **Send Message**: Send a message as a JoAi agent to a specific room
 
 ### JoAi Trigger
 - **Webhook Events**: Receive real-time events from JoAi agents
@@ -65,7 +65,7 @@ This node requires JoAi API credentials. You need:
 4. Configure the message parameters:
    - **Agent ID**: The UUID of the agent that will send the message
    - **Message**: The content to send
-   - **Room** (optional): Room or conversation ID to send to
+   - **Room** (optional): Room ID to send to
    - **Additional Fields** (optional): Message type and metadata
 5. Execute the workflow
 
