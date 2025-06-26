@@ -1,6 +1,6 @@
 {
   "name": "@joai/n8n-nodes-joai",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "n8n community node for JoAi - Send messages as AI agents and receive real-time event webhooks",
   "keywords": [
     "n8n-community-node-package",
