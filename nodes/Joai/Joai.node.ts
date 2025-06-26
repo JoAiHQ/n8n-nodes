@@ -81,8 +81,8 @@ export class Joai implements INodeType {
 				name: 'room',
 				type: 'string',
 				default: '',
-				placeholder: 'room_id or conversation_id',
-				description: 'Optional room or conversation ID. If not provided, agent will use default room.',
+				placeholder: 'room_id',
+				description: 'Optional room ID. If not provided, agent will use default room.',
 				displayOptions: {
 					show: {
 						operation: ['sendMessage'],
