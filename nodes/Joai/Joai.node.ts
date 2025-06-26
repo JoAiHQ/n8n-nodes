@@ -35,16 +35,22 @@ export class Joai implements INodeType {
 				noDataExpression: false,
 				options: [
 					{
-						name: 'Send Message',
-						value: 'sendMessage',
-						description: 'Send a message as an agent',
-						action: 'Send a message as an agent',
+						name: 'Send Message as User',
+						value: 'sendMessageAsUser',
+						description: 'Send a message as a user to an agent',
+						action: 'Send a message as a user to an agent',
+					},
+					{
+						name: 'Send Message as Agent',
+						value: 'sendMessageAsAgent',
+						description: 'Send a message as an agent to a room',
+						action: 'Send a message as an agent to a room',
 					},
 				],
-				default: 'sendMessage',
+				default: 'sendMessageAsUser',
 			},
 
-			// Agent message parameters
+			// Agent ID parameter (shared by both operations)
 			{
 				displayName: 'Agent ID',
 				name: 'agentId',
@@ -52,13 +58,15 @@ export class Joai implements INodeType {
 				required: true,
 				default: '',
 				placeholder: 'e.g. 07f3169e-e7f0-4394-8e7b-5446e8e1fcb6',
-				description: 'Agent UUID to send the message as',
+				description: 'Agent UUID to send the message to/as',
 				displayOptions: {
 					show: {
-						operation: ['sendMessage'],
+						operation: ['sendMessageAsUser', 'sendMessageAsAgent'],
 					},
 				},
 			},
+
+			// Message parameter (shared by both operations)
 			{
 				displayName: 'Message',
 				name: 'message',
@@ -72,90 +80,28 @@ export class Joai implements INodeType {
 				description: 'The message content to send',
 				displayOptions: {
 					show: {
-						operation: ['sendMessage'],
+						operation: ['sendMessageAsUser', 'sendMessageAsAgent'],
 					},
 				},
 			},
+
+			// Room parameter (shared by both operations)
 			{
 				displayName: 'Room',
 				name: 'room',
 				type: 'string',
+				required: true,
 				default: '',
 				placeholder: 'room_id',
-				description: 'Optional room ID. If not provided, agent will use default room.',
+				description: 'Room ID to send the message to',
 				displayOptions: {
 					show: {
-						operation: ['sendMessage'],
+						operation: ['sendMessageAsUser', 'sendMessageAsAgent'],
 					},
 				},
 			},
-			{
-				displayName: 'Additional Fields',
-				name: 'additionalFields',
-				type: 'collection',
-				placeholder: 'Add Field',
-				default: {},
-				displayOptions: {
-					show: {
-						operation: ['sendMessage'],
-					},
-				},
-				options: [
-					{
-						displayName: 'Message Type',
-						name: 'messageType',
-						type: 'options',
-						options: [
-							{
-								name: 'Text',
-								value: 'text',
-							},
-							{
-								name: 'System',
-								value: 'system',
-							},
-							{
-								name: 'Error',
-								value: 'error',
-							},
-						],
-						default: 'text',
-						description: 'Type of message to send',
-					},
-					{
-						displayName: 'Metadata',
-						name: 'metadata',
-						type: 'fixedCollection',
-						typeOptions: {
-							multipleValues: true,
-						},
-						default: {},
-						options: [
-							{
-								name: 'property',
-								displayName: 'Property',
-								values: [
-									{
-										displayName: 'Name',
-										name: 'name',
-										type: 'string',
-										default: '',
-										description: 'Name of the property',
-									},
-									{
-										displayName: 'Value',
-										name: 'value',
-										type: 'string',
-										default: '',
-										description: 'Value to set',
-									},
-								],
-							},
-						],
-						description: 'Additional metadata to include with the message',
-					},
-				],
-			},
+
+
 		],
 	};
 
@@ -167,8 +113,11 @@ export class Joai implements INodeType {
 			try {
 				const operation = this.getNodeParameter('operation', i) as string;
 
-				if (operation === 'sendMessage') {
-					const result = await handleAgentSendMessage.call(this, i);
+				if (operation === 'sendMessageAsUser') {
+					const result = await handleSendMessageAsUser.call(this, i);
+					returnData.push({ json: result });
+				} else if (operation === 'sendMessageAsAgent') {
+					const result = await handleSendMessageAsAgent.call(this, i);
 					returnData.push({ json: result });
 				}
 			} catch (error) {
@@ -184,30 +133,30 @@ export class Joai implements INodeType {
 	}
 }
 
-async function handleAgentSendMessage(this: IExecuteFunctions, itemIndex: number) {
+async function handleSendMessageAsUser(this: IExecuteFunctions, itemIndex: number) {
+	const agentId = this.getNodeParameter('agentId', itemIndex) as string;
+	const message = this.getNodeParameter('message', itemIndex) as string;
+	const room = this.getNodeParameter('room', itemIndex) as string;
+
+	const body = {
+		message: message,
+		room: room,
+	};
+
+	const response = await apiRequest.call(this, 'POST', `/agents/${agentId}/execute`, body);
+	return response.data || response;
+}
+
+async function handleSendMessageAsAgent(this: IExecuteFunctions, itemIndex: number) {
 	const agentId = this.getNodeParameter('agentId', itemIndex) as string;
 	const message = this.getNodeParameter('message', itemIndex) as string;
 	const room = this.getNodeParameter('room', itemIndex, '') as string;
-	const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as any;
 
-	const body: any = {
+	const body = {
 		message: message,
-		type: additionalFields.messageType || 'text',
+		room: room,
 	};
 
-	if (room) {
-		body.room = room;
-	}
-
-	if (additionalFields.metadata?.property?.length > 0) {
-		body.metadata = {};
-		additionalFields.metadata.property.forEach((prop: any) => {
-			if (prop.name && prop.value) {
-				body.metadata[prop.name] = prop.value;
-			}
-		});
-	}
-
-	const response = await apiRequest.call(this, 'POST', `/agents/${agentId}/execute`, body);
+	const response = await apiRequest.call(this, 'POST', `/agents/${agentId}/execute/as-agent`, body);
 	return response.data || response;
 }
