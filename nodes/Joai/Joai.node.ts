@@ -115,14 +115,29 @@ export class Joai implements INodeType {
 
 				if (operation === 'sendMessageAsUser') {
 					const result = await handleSendMessageAsUser.call(this, i);
-					returnData.push({ json: result });
+					returnData.push({
+						json: result,
+						pairedItem: {
+							item: i,
+						}
+					});
 				} else if (operation === 'sendMessageAsAgent') {
 					const result = await handleSendMessageAsAgent.call(this, i);
-					returnData.push({ json: result });
+					returnData.push({
+						json: result,
+						pairedItem: {
+							item: i,
+						}
+					});
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
-					returnData.push({ json: { error: error instanceof Error ? error.message : 'Unknown error' } });
+					returnData.push({
+						json: { error: error instanceof Error ? error.message : 'Unknown error' },
+						pairedItem: {
+							item: i,
+						}
+					});
 					continue;
 				}
 				throw error;

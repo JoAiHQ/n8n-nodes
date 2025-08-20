@@ -3,9 +3,9 @@ import type {
     IExecuteFunctions,
     IHookFunctions,
     IHttpRequestMethods,
-    ILoadOptionsFunctions,
-    IRequestOptions,
+    ILoadOptionsFunctions
 } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 export async function apiRequest(
 	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
@@ -16,10 +16,11 @@ export async function apiRequest(
 ): Promise<any> {
 	const credentials = await this.getCredentials('joaiApi');
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const fullUrl = `${credentials.baseUrl}${normalizedEndpoint}`;
 
-	const options: IRequestOptions = {
+	const options = {
 		method,
-		url: `${credentials.baseUrl}${normalizedEndpoint}`,
+		url: fullUrl,
 		body,
 		qs,
 		json: true,
@@ -29,10 +30,9 @@ export async function apiRequest(
 		},
 	};
 
-
 	this.logger?.info('🔍 JoAi API Request', {
 		method,
-		url: options.url,
+		url: fullUrl,
 		endpoint,
 		baseUrl: credentials.baseUrl,
 		hasBody: Object.keys(body).length > 0,
@@ -40,7 +40,11 @@ export async function apiRequest(
 	});
 
 	try {
-		const response = await this.helpers.request(options);
+		const response = await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			'joaiApi',
+			options
+		);
 		this.logger?.info('✅ JoAi API Response received', {
 			hasData: !!response,
 			responseType: typeof response,
@@ -51,14 +55,12 @@ export async function apiRequest(
 		this.logger?.error('❌ JoAi API Error', {
 			message: error.message,
 			status: error.httpCode || error.statusCode,
-			url: options.url,
+			url: fullUrl,
 			method,
 			errorType: error.name || 'Unknown'
 		});
 
-
-		const errorMessage = `JoAi API ${method} ${options.url} failed: ${error.message}`;
-		throw new Error(errorMessage);
+		throw new NodeApiError(this.getNode(), error);
 	}
 }
 
@@ -90,7 +92,7 @@ export function getAgentId(
 	const agentId = this.getNodeParameter('agentId') as string;
 
 	if (!agentId) {
-		throw new Error('Agent ID is required');
+		throw new NodeOperationError(this.getNode(), 'Agent ID is required');
 	}
 
 	return agentId;

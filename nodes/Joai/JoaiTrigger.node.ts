@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import type {
     IDataObject,
     IHookFunctions,
@@ -8,7 +7,7 @@ import type {
     IWebhookFunctions,
     IWebhookResponseData,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
+import { NodeApiError, NodeConnectionType } from 'n8n-workflow';
 
 import { apiRequest, getAgentId, getSecretToken } from './GenericFunctions';
 
@@ -203,7 +202,7 @@ export class JoaiTrigger implements INodeType {
 					agentId: this.getNodeParameter('agentId'),
 					triggerType: this.getNodeParameter('triggerType')
 				});
-				throw new Error(`Failed to create webhook: ${error.message}`);
+				throw new NodeApiError(this.getNode(), error);
 			}
 		},
 
@@ -268,20 +267,13 @@ export class JoaiTrigger implements INodeType {
 		const bodyData = this.getBodyData() as IDataObject;
 		const headerData = this.getHeaderData();
 
-
 		const workflowId = this.getWorkflow().id;
 		const nodeId = this.getNode().id;
 		const expectedSecret = `joai_${workflowId}_${nodeId}`;
 		const receivedSecret = headerData['x-joai-secret-token'];
 
 		if (expectedSecret && receivedSecret) {
-			const expectedBuffer = Buffer.from(expectedSecret);
-			const receivedBuffer = Buffer.from(String(receivedSecret));
-
-			if (
-				expectedBuffer.byteLength !== receivedBuffer.byteLength ||
-				!crypto.timingSafeEqual(expectedBuffer, receivedBuffer)
-			) {
+			if (expectedSecret !== String(receivedSecret)) {
 				const res = this.getResponseObject();
 				res.status(403).json({ message: 'Invalid webhook secret' });
 				return {
