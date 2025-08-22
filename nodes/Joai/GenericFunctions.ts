@@ -25,7 +25,6 @@ export async function apiRequest(
 		qs,
 		json: true,
 		headers: {
-			'Authorization': `Bearer ${credentials.apiKey}`,
 			'Content-Type': 'application/json',
 		},
 	};
